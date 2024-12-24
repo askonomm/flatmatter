@@ -1,0 +1,10 @@
+[project]
+name = "flatmatter"
+version = "0.1.0"
+description = "A YAML-like data serialization language, and library."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.black]
+line-length = 100
