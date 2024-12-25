@@ -19,8 +19,6 @@ class FlatMatter:
     def __parse_line(self, line: str):
         """
         Parses a given line of FlatMatter.
-
-        :param line: The line to parse.
         """
         # todo: check line conformance
         keys = line.split(":")[0].strip().split(".")
