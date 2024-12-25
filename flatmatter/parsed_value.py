@@ -1,6 +1,5 @@
-from typing import List
-from typing_extensions import Any
-from flatmatter.compute_action import ComputeAction
+from typing import List, Any
+from .compute_action import ComputeAction
 
 
 class ParsedValue:
