@@ -2,5 +2,7 @@ from typing import Any
 
 
 class Function:
-    def compute(self, *args) -> Any:
+    name: str
+    
+    def compute(self, *args: List[str | int | float | bool | Any]) -> Any:
         raise NotImplementedError("Subclasses must extend this class.")

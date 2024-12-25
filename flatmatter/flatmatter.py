@@ -1,13 +1,13 @@
 from typing import Any, Dict, Optional
-from flatmatter.function import Function
-from flatmatter.parsed_value import ParsedValue
-from flatmatter.compute_action import ComputeAction
-
+from . import Function, ParsedValue, ComputeAction
 
 class FlatMatter:
     __parsed_config: Dict[str, Any] = {}
 
-    def __init__(self, content: str, functions: list[Function] = None):
+    def __init__(self, content: str, functions=None):
+        if functions is None:
+            functions = []
+
         self.content = content
         self.functions = functions
 
@@ -43,6 +43,9 @@ class FlatMatter:
         Detects if the value is a simple value. A simple value is any
         of the following: `"a string"`, boolean `true` or `false`, or
         anything numeric like `12345` or `123.45`.
+
+        :param value: The value to check.
+        :return: `True` if the value is a simple value, `False` otherwise.
         """
         is_string = value.startswith('"') and value.endswith('"')
         is_bool = value == "true" or value == "false"
@@ -56,8 +59,11 @@ class FlatMatter:
         Detects if the value is a function value. A function value is any
         of the following:
 
-        - A function call with arguments: `(function-name ..args)`
+        - A function call with arguments: `(function-name *args)`
         - A function call by reference: `function-name`
+
+        :param value: The value to check.
+        :return: `True` if the value is a function value, `False` otherwise.
         """
         is_fn = value.startswith("(") and value.endswith(")")
         is_fn_reference = value.isalnum()
@@ -82,6 +88,9 @@ class FlatMatter:
 
         The result of the previous pipe gets passed to the next as a first
         argument.
+
+        :param value: The value to check.
+        :return: `True` if the value is a piped value, `False` otherwise.
         """
         for part in self.__compose_piped_value_parts(value):
             is_simple_value = self.__is_simple_value(part)
@@ -93,6 +102,11 @@ class FlatMatter:
         return True
 
     def __parse_value(self, value: str) -> Optional[ParsedValue]:
+        """
+
+        :param value: The value to parse.
+        :return: `None` if the value cannot be parsed, otherwise `ParsedValue`.
+        """
         if self.__is_simple_value(value):
             return ParsedValue(
                 value=self.__parse_simple_value(value),
@@ -158,7 +172,7 @@ class FlatMatter:
             compute_actions=[self.__parse_function_value(x) for x in parts]
         )
 
-    def __compose_function_value_args(self, value: str) -> list[str | int | float | bool]:
+    def __compose_function_value_args(self, value: str) -> list[Any]:
         """"""
         parts = value[1:-1].split(" ")[1:]
 
@@ -178,7 +192,7 @@ class FlatMatter:
             last_normalized_part = normalized_parts[-1]
             normalized_parts[-1] = f"{last_normalized_part} {parts[idx]}"
 
-        args = []
+        args: list[str | int | float | bool] = []
 
         for part in normalized_parts:
             args.append(self.__parse_simple_value(part))
@@ -240,3 +254,6 @@ class FlatMatter:
         self.__parse()
 
         return self.__parsed_config
+
+def fm(content: str, functions: list[Function] = None) -> FlatMatter:
+    return FlatMatter(content, functions)
