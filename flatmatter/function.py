@@ -1,13 +1,17 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any
 
 
-class Function(ABCMeta):
+class Function(ABC):
     name: str
 
+    def __init__(self):
+        pass
+
     @abstractmethod
-    def compute(self, *args: list[Any]) -> Any:
+    def compute(self, args: list[Any]) -> Any:
         raise NotImplementedError("Subclasses must extend this class.")
+
 
 def fn(name: str):
     def wrapper(cls: type[Function]):
@@ -16,4 +20,3 @@ def fn(name: str):
         return cls
 
     return wrapper
- 

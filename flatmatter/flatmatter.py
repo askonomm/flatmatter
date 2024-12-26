@@ -1,14 +1,16 @@
+import re
 from typing import Any, Dict, Optional
-from .function  import Function
+from .function import Function
 from .parsed_value import ParsedValue
 from .compute_action import ComputeAction
 
+
 class FlatMatter:
     __parsed_config: Dict[str, Any] = {}
-    __functions: list[Function] = []
+    __functions: list[type[Function]] = []
     __content: str = ""
 
-    def __init__(self, content: str, functions: list[Function] = []):
+    def __init__(self, content: str, functions: list[type[Function]] = []):
         self.__content = content
         self.__functions = functions
 
@@ -64,7 +66,7 @@ class FlatMatter:
         - A function call by reference: `function-name`
         """
         is_fn = value.startswith("(") and value.endswith(")")
-        is_fn_reference = value.isalnum()
+        is_fn_reference = re.match(r"^([a-zA-Z0-9_-]+)$", value) is not None
 
         return is_fn or is_fn_reference
 
@@ -87,23 +89,21 @@ class FlatMatter:
         The result of the previous pipe gets passed to the next as a first
         argument.
         """
-        for part in self.__compose_piped_value_parts(value):
+        parts = self.__compose_piped_value_parts(value)
+
+        for part in parts:
             is_simple_value = self.__is_simple_value(part)
             is_function_value = self.__is_function_value(part)
 
-            if not is_simple_value or is_function_value:
+            if not is_simple_value and not is_function_value:
                 return False
 
         return True
 
     def __parse_value(self, value: str) -> Optional[ParsedValue]:
-        """
-        """
+        """ """
         if self.__is_simple_value(value):
-            return ParsedValue(
-                value=self.__parse_simple_value(value),
-                compute_actions=[]
-            )
+            return ParsedValue(value=self.__parse_simple_value(value), compute_actions=[])
 
         if self.__is_function_value(value):
             return ParsedValue(
@@ -120,9 +120,7 @@ class FlatMatter:
 
     @staticmethod
     def __parse_simple_value(value: str) -> str | int | float | bool:
-        """
-
-        """
+        """ """
         if all([x in "1234567890" for x in value.lstrip("-")]):
             return int(value)
 
@@ -160,8 +158,7 @@ class FlatMatter:
             )
 
         return ParsedValue(
-            value=None,
-            compute_actions=[self.__parse_function_value(x) for x in parts]
+            value=None, compute_actions=[self.__parse_function_value(x) for x in parts]
         )
 
     def __parse_function_value_args(self, value: str) -> list[Any]:
@@ -241,8 +238,10 @@ class FlatMatter:
     def __find_function_instance(self, name: str) -> Optional[Function]:
         """"""
         for fn in self.__functions:
-            if fn.name is name:
-                return fn
+            instance = fn()
+
+            if instance.name == name:
+                return instance
 
         return None
 
@@ -251,5 +250,6 @@ class FlatMatter:
 
         return self.__parsed_config
 
-def fm(content: str, functions: list[Function] = []) -> Dict[str, Any]:
+
+def fm(content: str, functions: list[type[Function]] = []) -> Dict[str, Any]:
     return FlatMatter(content, functions).to_dict()
