@@ -1,6 +1,6 @@
 [project]
 name = "flatmatter"
-version = "0.2.0"
+version = "0.3.0"
 description = "A YAML-like data serialization language, and library."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -12,7 +12,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
-  "Development Status :: 2 - Pre-Alpha"
+  "Development Status :: 3 - Alpha"
 ]
 
 [tool.black]

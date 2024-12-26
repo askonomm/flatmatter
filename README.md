@@ -42,7 +42,7 @@ from flatmatter import Function, fn
 
 @fn('my-function')
 class MyFunction(Function):
-  def compute(self, *args: list[Any]) -> Any:
+  def compute(self, args: list[Any]) -> Any:
     # do something with args here and return the desired result.
 ```
 
