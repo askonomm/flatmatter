@@ -9,12 +9,18 @@ from .conformance_result import ConformanceResult
 
 class FlatMatter:
     __parsed_config: Dict[str, Any] = {}
-    __functions: list[type[Function]] = []
+    __function_instances: Dict[str, Function] = {}
     __content: str = ""
 
-    def __init__(self, content: str, functions: list[type[Function]] = []):
+    def __init__(self, content: str, functions: list[type[Function]] = None):
+        self.__parsed_config = {}
         self.__content = content
-        self.__functions = functions
+        self.__function_instances = {}
+
+        if functions:
+            for function in functions:
+                instance = function()
+                self.__function_instances[instance.name] = instance
 
     def __parse(self):
         for line in self.__content.splitlines():
@@ -80,11 +86,10 @@ class FlatMatter:
     def __validate_line_has_only_one_colon_char(line: str) -> ConformanceResult:
         """
         Validates that the line has only one top-level `:` character. Top-level
-        as in `:` is only allowed inside of a value that is a string, or a string
+        as in `:` is only allowed inside a value that is a string, or a string
         argument to a function.
         """
         char_count = 0
-        parts = line.split('"')
 
         for idx, char in enumerate(line):
             if char == ":" and line[0:idx].count('"') % 2 == 0:
@@ -181,7 +186,7 @@ class FlatMatter:
     @staticmethod
     def __parse_simple_value(value: str) -> str | int | float | bool:
         """
-        Parses thje value part of a line into a simple value, like for example
+        Parses the value part of a line into a simple value, like for example
         a string, an int, float or bool.
         """
         if all([x in "1234567890" for x in value.lstrip("-")]):
@@ -314,13 +319,7 @@ class FlatMatter:
         For a given `name` attempts to find a corresponding Function,
         and will return an instance of it if it does.
         """
-        for fn in self.__functions:
-            instance = fn()
-
-            if instance.name == name:
-                return instance
-
-        return None
+        return self.__function_instances.get(name)
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -331,7 +330,7 @@ class FlatMatter:
         return self.__parsed_config
 
 
-def fm(content: str, functions: list[type[Function]] = []) -> Dict[str, Any]:
+def fm(content: str, functions: list[type[Function]] = None) -> Dict[str, Any]:
     """
     Shorthand function that does the equivalent of `FlatMatter(...).to_dict()`.
     """
