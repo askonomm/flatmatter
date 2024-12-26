@@ -45,90 +45,90 @@ def test_bool_false_datatype():
 
 
 def test_function_reference_value():
-    class FunctionReference1(Function):
-        name = 'function-reference1'
+    class FunctionReference(Function):
+        name = 'function-reference'
 
         def compute(self, args: list[Any]) -> Any:
             return "hello"
 
-    fm = FlatMatter("test: function-reference1", [FunctionReference1])
+    fm = FlatMatter("test: function-reference", [FunctionReference])
 
     assert fm.to_dict() == {"test": "hello"}
 
 
 def test_function_call_value():
-    class FunctionCall1(Function):
-        name = 'function-call1'
+    class FunctionCall(Function):
+        name = 'function-call'
 
         def compute(self, args: list[Any]) -> Any:
             return args[0]
 
-    fm = FlatMatter('test: (function-call1 "hello")', [FunctionCall1])
+    fm = FlatMatter('test: (function-call "hello")', [FunctionCall])
 
     assert fm.to_dict() == {"test": "hello"}
 
 
 def test_piped_value():
-    class FunctionReference2(Function):
-        name = 'function-reference2'
+    class FunctionReference(Function):
+        name = 'function-reference'
 
         def compute(self, args: list[Any]) -> Any:
             return f"hello {args[0]}"
 
-    fm = FlatMatter('test: "testing pipes" / function-reference2', [FunctionReference2])
+    fm = FlatMatter('test: "testing pipes" / function-reference', [FunctionReference])
 
     assert fm.to_dict() == {"test": "hello testing pipes"}
 
 
 def test_piped_value_with_function_call():
-    class FunctionCall2(Function):
-        name = 'function-call2'
+    class FunctionCall(Function):
+        name = 'function-call'
 
         def compute(self, args: list[Any]) -> Any:
             return f"{args[0]} {args[1]}"
 
-    fm = FlatMatter('test: "testing pipes" / (function-call2 12345)', [FunctionCall2])
+    fm = FlatMatter('test: "testing pipes" / (function-call 12345)', [FunctionCall])
 
     assert fm.to_dict() == {"test": "testing pipes 12345"}
 
 
 def test_longer_piped_value():
-    class FunctionReference3(Function):
-        name = 'function-reference3'
+    class FunctionReference(Function):
+        name = 'function-reference'
 
         def compute(self, args: list[Any]) -> Any:
             return f"hello {args[0]}"
 
-    class FunctionCall3(Function):
-        name = 'function-call3'
+    class FunctionCall(Function):
+        name = 'function-call'
 
         def compute(self, args: list[Any]) -> Any:
             return f"{args[0]} {args[1]}"
 
-    fm = FlatMatter('test: "testing" / (function-call3 12345) / function-reference3', [
-        FunctionCall3,
-        FunctionReference3
+    fm = FlatMatter('test: "testing" / (function-call 12345) / function-reference', [
+        FunctionCall,
+        FunctionReference
     ])
 
     assert fm.to_dict() == {"test": "hello testing 12345"}
 
 
 def test_longer_piped_value_with_no_default_value():
-    class FunctionReference4(Function):
-        name = 'function-reference4'
+    class FunctionReference(Function):
+        name = 'function-reference'
 
         def compute(self, args: list[Any]) -> Any:
             return f"hello {args[0]}"
 
-    class FunctionCall4(Function):
-        name = 'function-call4'
+    class FunctionCall(Function):
+        name = 'function-call'
 
         def compute(self, args: list[Any]) -> Any:
             return f"{args[0]}"
 
-    fm = FlatMatter('test: (function-call4 12345) / function-reference4', [
-        FunctionCall4,
-        FunctionReference4
+    fm = FlatMatter('test: (function-call 12345) / function-reference', [
+        FunctionCall,
+        FunctionReference
     ])
 
     assert fm.to_dict() == {"test": "hello 12345"}
