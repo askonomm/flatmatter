@@ -1,8 +1,10 @@
+import inspect
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 from .function import Function
 from .parsed_value import ParsedValue
 from .compute_action import ComputeAction
+from .conformance_result import ConformanceResult
 
 
 class FlatMatter:
@@ -22,9 +24,10 @@ class FlatMatter:
         """
         Parses a given line of FlatMatter.
         """
-        # todo: check line conformance
+        self.__validate_line_conformance(line)
+
         keys = line.split(":")[0].strip().split(".")
-        value = line.split(":")[1].strip()
+        value = ":".join(line.split(":")[1:]).strip()
         value_parsed = self.__parse_value(value)
 
         if not value_parsed:
@@ -42,6 +45,63 @@ class FlatMatter:
 
                 if isinstance(current[key], dict):
                     current = current[key]
+
+    def __validate_line_conformance(self, line: str):
+        """
+        Validates line conformance with a variety of checks. If any
+        fails, raises a SyntaxError.
+        """
+        checks: list[Callable] = [
+            self.__validate_line_has_key_val,
+            self.__validate_line_has_only_one_colon_char,
+        ]
+
+        for check in checks:
+            result = check(line)
+
+            if not result.passed:
+                raise SyntaxError(
+                    f"\n\nFlatMatter has a syntax error: {result.error.lstrip()}\n---\nLine: {line}\n\n"
+                )
+
+    @staticmethod
+    def __validate_line_has_key_val(line: str) -> ConformanceResult:
+        """
+        Validates that the line has clear key and value separation.
+        """
+        if line.find(":") == -1:
+            return ConformanceResult(
+                passed=False, error="There is no separation between key or value."
+            )
+
+        return ConformanceResult(passed=True)
+
+    @staticmethod
+    def __validate_line_has_only_one_colon_char(line: str) -> ConformanceResult:
+        """
+        Validates that the line has only one top-level `:` character. Top-level
+        as in `:` is only allowed inside of a value that is a string, or a string
+        argument to a function.
+        """
+        char_count = 0
+        parts = line.split('"')
+
+        for idx, char in enumerate(line):
+            if char == ":" and line[0:idx].count('"') % 2 == 0:
+                char_count += 1
+
+        if char_count > 1:
+            return ConformanceResult(
+                passed=False,
+                error=inspect.cleandoc(
+                    """
+                    A line can only contain one `:` character outside of a
+                    string or a string function argument.
+                    """
+                ),
+            )
+
+        return ConformanceResult(passed=True)
 
     @staticmethod
     def __is_simple_value(value: str) -> bool:
@@ -89,9 +149,7 @@ class FlatMatter:
         The result of the previous pipe gets passed to the next as a first
         argument.
         """
-        parts = self.__compose_piped_value_parts(value)
-
-        for part in parts:
+        for part in self.__compose_piped_value_parts(value):
             is_simple_value = self.__is_simple_value(part)
             is_function_value = self.__is_function_value(part)
 
@@ -101,7 +159,9 @@ class FlatMatter:
         return True
 
     def __parse_value(self, value: str) -> Optional[ParsedValue]:
-        """ """
+        """
+        Parses the value part of a line.
+        """
         if self.__is_simple_value(value):
             return ParsedValue(value=self.__parse_simple_value(value), compute_actions=[])
 
@@ -120,7 +180,10 @@ class FlatMatter:
 
     @staticmethod
     def __parse_simple_value(value: str) -> str | int | float | bool:
-        """ """
+        """
+        Parses thje value part of a line into a simple value, like for example
+        a string, an int, float or bool.
+        """
         if all([x in "1234567890" for x in value.lstrip("-")]):
             return int(value)
 
@@ -133,7 +196,10 @@ class FlatMatter:
         return value[1:-1]
 
     def __parse_function_value(self, value: str) -> ComputeAction:
-        """"""
+        """
+        Parses the value part of a line into a Compute Action, which is
+        later executed to run the function described in FlatMatter.
+        """
         is_fn = value.startswith("(") and value.endswith(")")
 
         if not is_fn:
@@ -148,7 +214,13 @@ class FlatMatter:
         )
 
     def __parse_piped_value(self, value: str) -> ParsedValue:
-        """"""
+        """
+        Parses the value part of a line into a ParsedValue, which is
+        composed out of piped parts separated by the forward slash `/` character.
+
+        The ParsedValue will include the default value, if any, and a list of compute
+        actions which will later be executed.
+        """
         parts = self.__compose_piped_value_parts(value)
 
         if self.__is_simple_value(parts[0]):
@@ -165,7 +237,6 @@ class FlatMatter:
         """
         Takes the entire value part of a line and, assuming it is a function value,
         parses it into a list of arguments to be passed down to the function.
-
         """
         parts = value[1:-1].split(" ")[1:]
 
@@ -219,7 +290,10 @@ class FlatMatter:
         return normalized_parts
 
     def __compute_value(self, parsed_value: ParsedValue) -> Any:
-        """"""
+        """
+        Takes ParsedValue and, optionally an initial value, and runs
+        compute actions over it to return the final computed value.
+        """
         value = parsed_value.value
 
         for compute_action in parsed_value.compute_actions:
@@ -236,7 +310,10 @@ class FlatMatter:
         return value
 
     def __find_function_instance(self, name: str) -> Optional[Function]:
-        """"""
+        """
+        For a given `name` attempts to find a corresponding Function,
+        and will return an instance of it if it does.
+        """
         for fn in self.__functions:
             instance = fn()
 
@@ -245,11 +322,17 @@ class FlatMatter:
 
         return None
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Return the parsed config data as a dictionary.
+        """
         self.__parse()
 
         return self.__parsed_config
 
 
 def fm(content: str, functions: list[type[Function]] = []) -> Dict[str, Any]:
+    """
+    Shorthand function that does the equivalent of `FlatMatter(...).to_dict()`.
+    """
     return FlatMatter(content, functions).to_dict()
