@@ -61,7 +61,7 @@ class FlatMatter:
 
             if not result.passed:
                 raise SyntaxError(
-                    f"\n\nFlatMatter has a syntax error: {result.error.lstrip()}\n---\nLine: {line}\n\n"
+                    f"\n\nFlatMatter error: {result.error.lstrip()}\n---\nLine: {line}\n\n"
                 )
 
     @staticmethod
