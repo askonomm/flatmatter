@@ -6,8 +6,12 @@ name: Python package test
 on:
   push:
     branches: [ "master" ]
+    paths-ignore:
+      - 'coverage-badge.svg'
   pull_request:
     branches: [ "master" ]
+    paths-ignore:
+      - 'coverage-badge.svg'
 
 jobs:
   build:
