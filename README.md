@@ -1,5 +1,7 @@
 # FlatMatter
 
+![Coverage](https://raw.githubusercontent.com/askonomm/flatmatter/refs/heads/master/coverage-badge.svg)
+
 A YAML-like data serialization language with support for functions. FlatMatter is considered feature-complete and is 
 intentionally kept simple. Bug fixes and performance improvements are still made, of course.
 
