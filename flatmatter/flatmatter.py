@@ -275,14 +275,10 @@ class FlatMatter:
         of piped parts.
         """
         parts = value.split(" / ")
-
-        if len(parts) == 0:
-            return []
-
         normalized_parts = [parts[0]]
 
         for idx, part in enumerate(parts[1:], start=1):
-            until_current = " / ".join(parts[1:idx])
+            until_current = " / ".join(normalized_parts[0:idx])
             quote_count = until_current.count('"')
 
             if quote_count % 2 == 0:
@@ -328,10 +324,3 @@ class FlatMatter:
         self.__parse()
 
         return self.__parsed_config
-
-
-def fm(content: str, functions: list[type[Function]] = None) -> Dict[str, Any]:
-    """
-    Shorthand function that does the equivalent of `FlatMatter(...).to_dict()`.
-    """
-    return FlatMatter(content, functions).to_dict()

@@ -10,7 +10,7 @@ class Function(ABC):
 
     @abstractmethod
     def compute(self, args: list[Any]) -> Any:
-        raise NotImplementedError("Subclasses must extend this class.")
+        pass
 
 
 def fn(name: str):
