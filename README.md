@@ -1,6 +1,7 @@
 # FlatMatter
 
-A YAML-like data serialization language with support for functions.
+A YAML-like data serialization language with support for functions. FlatMatter is considered feature-complete and is 
+intentionally kept simple. Bug fixes and performance improvements are still made, of course.
 
 Example FlatMatter:
 
