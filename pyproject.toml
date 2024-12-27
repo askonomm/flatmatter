@@ -1,6 +1,6 @@
 [project]
 name = "flatmatter"
-version = "0.3.0"
+version = "0.9.0"
 description = "A YAML-like data serialization language, and library."
 readme = "README.md"
 requires-python = ">=3.12"
