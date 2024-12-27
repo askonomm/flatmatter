@@ -9,7 +9,7 @@ Example FlatMatter:
 
 ```yaml
 title: "My Blog"
-last_updated: (get-content "posts") / (limit 1) / (get "publised_at") / (date "YYYY-mm-dd")
+last_updated: (get-content "posts") / (limit 1) / (get "published_at") / (date "YYYY-mm-dd")
 posts: "posts" / get-content
 ```
 
@@ -27,6 +27,8 @@ of the next function, and so on, to produce an end result.
 ```shell
 pip install flatmatter
 ``` 
+
+Requires Python 3.10 or higher.
 
 ## Usage
 
