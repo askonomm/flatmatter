@@ -12,7 +12,7 @@ class FlatMatter:
     __function_instances: Dict[str, Function] = {}
     __content: str = ""
 
-    def __init__(self, content: str, functions: list[type[Function]] = None):
+    def __init__(self, content: str, functions: Optional[list[type[Function]]] = None):
         self.__parsed_config = {}
         self.__content = content
         self.__function_instances = {}
