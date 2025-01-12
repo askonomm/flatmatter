@@ -3,6 +3,5 @@ import FlatMatter, {
   type Matter,
 } from "./src/flatmatter.ts";
 
-export { FlatMatter };
-export type { FlatMatterFn };
-export type { Matter };
+export default FlatMatter;
+export type { FlatMatterFn, Matter };
