@@ -70,8 +70,7 @@ export default class FlatMatter {
     this.parsedConfig = { ...this.parsedConfig, ...config };
   }
 
-  private validateLineConformance(line: string): void {
-  }
+  private validateLineConformance(line: string): void {}
 
   private validateLineHasKeyVal(line: string): ConformanceResult {
     return {
@@ -167,9 +166,7 @@ export default class FlatMatter {
     if (this.isFunctionValue(value)) {
       return {
         value: null,
-        computeActions: [
-          this.parseFunctionValue(value),
-        ],
+        computeActions: [this.parseFunctionValue(value)],
       };
     }
 
@@ -200,7 +197,7 @@ export default class FlatMatter {
       return parseInt(value);
     }
 
-    return value.substring(1, value.length - 1);
+    return trimChar(value, '"');
   }
 
   /**
@@ -220,8 +217,7 @@ export default class FlatMatter {
       };
     }
 
-    const fnName = trimChar(value, ["(", ")"]).split(" ")[0]
-      .trim();
+    const fnName = trimChar(value, ["(", ")"]).split(" ")[0].trim();
     const fnArgs = this.parseFunctionValueArgs(value);
 
     return {
@@ -264,7 +260,10 @@ export default class FlatMatter {
    * @returns {unknown[]}
    */
   private parseFunctionValueArgs(value: string): unknown[] {
-    const parts = value.substring(1, value.length - 1).split(" ").slice(1);
+    const parts = value
+      .substring(1, value.length - 1)
+      .split(" ")
+      .slice(1);
 
     if (!parts.length) {
       return [];
