@@ -22,8 +22,48 @@ of the next function, and so on, to produce an end result.
 
 ## Install
 
-To be written ...
+```shell
+npm i flatmatter
+```
 
 ## Usage
 
-To be written ...
+The most basic usage looks like this:
+
+```typescript
+import FlatMatter, {ToObject} from "flatmatter";
+
+const fm = new FlatMatter('key: "value"');
+const config = fm.serialize(new ToObject());
+
+// {key: "value"}
+```
+
+However, you most likely want to use it with functions. Those you have to create yourself. An example function looks
+like this:
+
+```typescript
+import {FlatMatterFn} from "flatmatter";
+
+class ToUpper implements FlatMatterFn {
+  name = "to-upper";
+
+  compute(input: string): unknown {
+    return input.toUpperCase();
+  }
+}
+```
+
+A FlatMatter function has to implement the `FlatMatterFn` interface. And like I mentioned before, a thing to keep in
+mind is that if the function is piped, the first argument passed to it will be the result of the previous operation.
+
+Once you have your functions, simply pass them to FlatMatter like this:
+
+```typescript
+import FlatMatter, {ToObject} from "flatmatter";
+
+const fm = new FlatMatter('key: "value" / to-upper', [new MyFunction()]);
+const config = fm.serialize(new ToObject());
+
+// {key: "VALUE"}
+```
