@@ -55,3 +55,37 @@ test("Simple function usage", () => {
     a: "VALUE",
   });
 });
+
+test("Piped function by reference usage", () => {
+  class ToUpper implements FlatMatterFn {
+    name = "to-upper";
+
+    compute(input: string): unknown {
+      return input.toUpperCase();
+    }
+  }
+
+  const fm = new FlatMatter('a: "value" / to-upper', [new ToUpper()]);
+  const config = fm.serialize(new ToObject());
+
+  expect(config).toStrictEqual({
+    a: "VALUE",
+  });
+});
+
+test("Piped function by call usage", () => {
+  class ToUpper implements FlatMatterFn {
+    name = "to-upper";
+
+    compute(input: string, additional: number): unknown {
+      return `${input.toUpperCase()}-${additional}`;
+    }
+  }
+
+  const fm = new FlatMatter('a: "value" / (to-upper 123)', [new ToUpper()]);
+  const config = fm.serialize(new ToObject());
+
+  expect(config).toStrictEqual({
+    a: "VALUE-123",
+  });
+});
