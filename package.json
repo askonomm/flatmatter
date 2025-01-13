@@ -1,6 +1,6 @@
 {
   "name": "flatmatter",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A data serialization language, and library, with support for functions.",
   "author": "Asko Nõmm <asko@nmm.ee> (https://nmm.ee)",
   "main": "dist/index.js",
@@ -25,7 +25,6 @@
     "tsup": "^8.3.5",
     "typescript": "^5.7.3",
     "vite": "^5.4.11",
-    "vitest": "^2.1.8",
-    "@types/vitest": ""
+    "vitest": "^2.1.8"
   }
 }
