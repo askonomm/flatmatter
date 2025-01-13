@@ -143,4 +143,4 @@ declare class ToJson implements Serializer {
     serialize(parsedConfig: Matter): string;
 }
 
-export { FlatMatter, type FlatMatterFn, type Serializer, ToJson, ToObject };
+export { FlatMatter, type FlatMatterFn, type Matter, type Serializer, ToJson, ToObject };
