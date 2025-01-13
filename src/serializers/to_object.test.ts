@@ -48,7 +48,7 @@ test("Simple function usage", () => {
     }
   }
 
-  const fm = new FlatMatter('a: (to-upper "value")', [new ToUpper()]);
+  const fm = new FlatMatter('a: (to-upper "value")', [new ToUpper]);
   const config = fm.serialize(new ToObject());
 
   expect(config).toStrictEqual({
@@ -65,7 +65,7 @@ test("Piped function by reference usage", () => {
     }
   }
 
-  const fm = new FlatMatter('a: "value" / to-upper', [new ToUpper()]);
+  const fm = new FlatMatter('a: "value" / to-upper', [new ToUpper]);
   const config = fm.serialize(new ToObject());
 
   expect(config).toStrictEqual({
@@ -82,10 +82,85 @@ test("Piped function by call usage", () => {
     }
   }
 
-  const fm = new FlatMatter('a: "value" / (to-upper 123)', [new ToUpper()]);
+  const fm = new FlatMatter('a: "value" / (to-upper 123)', [new ToUpper]);
   const config = fm.serialize(new ToObject());
 
   expect(config).toStrictEqual({
     a: "VALUE-123",
   });
 });
+
+test("Invalid value in pipe", () => {
+  const fm = new FlatMatter('a: "value" / / asd');
+  const config = fm.serialize(new ToObject());
+
+  expect(config).toStrictEqual({});
+})
+
+test("Invalid value in pipe, 2", () => {
+  const fm = new FlatMatter('a: "value" / asd');
+  const config = fm.serialize(new ToObject());
+
+  expect(config).toStrictEqual({
+    a: "value"
+  });
+})
+
+test("Only piped functions", () => {
+  class FirstFn implements FlatMatterFn {
+    name = "first-fn";
+
+    compute(input: string): unknown {
+      return input.toUpperCase();
+    }
+  }
+
+  class SecondFn implements FlatMatterFn {
+    name = "second-fn";
+
+    compute(input: string): unknown {
+      return `${input}-passed-by-second`;
+    }
+  }
+
+  const fm = new FlatMatter('a: (first-fn "value / here") / second-fn', [new FirstFn, new SecondFn]);
+  const config = fm.serialize(new ToObject());
+
+  expect(config).toStrictEqual({
+    a: "VALUE / HERE-passed-by-second"
+  });
+});
+
+test("Function call without any args", () => {
+  class ToUpper implements FlatMatterFn {
+    name = "to-upper";
+
+    compute(input: string): unknown {
+      return input.toUpperCase();
+    }
+  }
+
+  const fm = new FlatMatter('a: "value" / (to-upper)', [new ToUpper]);
+  const config = fm.serialize(new ToObject());
+
+  expect(config).toStrictEqual({
+    a: "VALUE",
+  });
+})
+
+test("Function call using multiple strings with spaces as arg", () => {
+  class ToUpper implements FlatMatterFn {
+    name = "to-upper";
+
+    compute(input: string): unknown {
+      return input.toUpperCase();
+    }
+  }
+
+  const fm = new FlatMatter('a: (to-upper "value goes here" "and here")', [new ToUpper]);
+  const config = fm.serialize(new ToObject());
+
+  expect(config).toStrictEqual({
+    a: "VALUE GOES HERE",
+  });
+})

@@ -138,13 +138,9 @@ export default class FlatMatter {
      * @returns {boolean}
      */
     private isPipedValue(value: string): boolean {
-        for (const part of this.composePipedValueParts(value)) {
-            if (!this.isSimpleValue(part) && !this.isFunctionValue(part)) {
-                return false;
-            }
-        }
-
-        return true;
+        return this.composePipedValueParts(value).every(part => {
+            return this.isSimpleValue(part) || this.isFunctionValue(part)
+        });
     }
 
     /**
@@ -188,12 +184,12 @@ export default class FlatMatter {
             return value === "true";
         }
 
-        if (!Number.isNaN(parseFloat(value))) {
-            return parseFloat(value);
+        if (!Number.isNaN(parseInt(value)) && value.indexOf('.') === -1) {
+            return parseInt(value);
         }
 
-        if (!Number.isNaN(parseInt(value))) {
-            return parseInt(value);
+        if (!Number.isNaN(parseFloat(value)) && value.indexOf('.') !== -1) {
+            return parseFloat(value);
         }
 
         return trimChar(value, '"');
