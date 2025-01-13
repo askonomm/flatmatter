@@ -1,6 +1,6 @@
 {
   "name": "flatmatter",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "description": "A data serialization language, and library, with support for functions.",
   "author": "Asko Nõmm <asko@nmm.ee> (https://nmm.ee)",
   "main": "dist/index.js",
@@ -13,6 +13,14 @@
     "serialization",
     "data"
   ],
+  "bugs": {
+    "url": "https://github.com/askonomm/flatmatter/issues",
+    "email": "asko@nmm.ee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/askonomm/flatmatter.git"
+  },
   "scripts": {
     "bundle": "tsup src/index.ts",
     "test": "vitest",
