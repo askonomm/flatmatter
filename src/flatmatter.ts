@@ -4,11 +4,6 @@ export type Matter = {
     [key: string]: Matter | unknown;
 };
 
-export type ConformanceResult = {
-    passed: boolean;
-    error?: string;
-};
-
 export type ParsedValue = {
     value: unknown;
     computeActions: ComputeAction[];
@@ -41,19 +36,21 @@ export default class FlatMatter {
     }
 
     private parse(): void {
-        for (const line of this.content.split(/\r?\n/)) {
-            this.parseLine(line);
+        const lines = this.content.split(/\r?\n/);
+
+        for (let i = 0; i < lines.length; i++) {
+            this.parseLine(i, lines[i]);
         }
     }
 
     /**
      * Parses a given line of FlatMatter.
      *
+     * @param idx
      * @param {string} line
-     * @returns {void}
      */
-    private parseLine(line: string): void {
-        this.validateLineConformance(line);
+    private parseLine(idx: number, line: string): void {
+        this.validateLineConformance(idx, line);
 
         const keys = line.split(":")[0].trim().split(".");
         const value = line.split(":").slice(1).join(":").trim();
@@ -68,19 +65,59 @@ export default class FlatMatter {
         this.parsedConfig = {...this.parsedConfig, ...config};
     }
 
-    private validateLineConformance(line: string): void {
+    /**
+     * For better developer experience, this validates each line
+     * against some common mistakes you can make, and throws an Error
+     * if you did.
+     *
+     * @param {number} idx
+     * @param {string} line
+     */
+    private validateLineConformance(idx: number, line: string): void {
+        const validators = [
+            this.validateLineHasKeyVal,
+            this.validateLineHasOnlyOneColonChar,
+        ];
+
+        for(const validator of validators) {
+            validator(idx, line);
+        }
     }
 
-    private validateLineHasKeyVal(line: string): ConformanceResult {
-        return {
-            passed: true,
-        };
+    /**
+     * Validates that the given line has a value separator.
+     *
+     * @param {number} idx
+     * @param {string} line
+     */
+    private validateLineHasKeyVal(idx: number, line: string): void {
+        if (!line.includes(":")) {
+            throw new Error(`Line on index ${idx} doesn't have a value separator.`);
+        }
     }
 
-    private validateLineHasOnlyOneColonChar(line: string): ConformanceResult {
-        return {
-            passed: true,
-        };
+    /**
+     * Validates that the given line has only one value separator.
+     *
+     * @param {number} idx
+     * @param {string} line
+     */
+    private validateLineHasOnlyOneColonChar(idx: number, line: string): void {
+        let separatorCount = 0;
+        let parts = line.split(":").slice(1);
+
+        for(let i = 0; i < parts.length; i++) {
+            const partsUntilCurrent = parts.slice(0, i).join(":");
+            const quoteCount = partsUntilCurrent.split('"').length - 1;
+
+            if (quoteCount % 2 === 0) {
+                separatorCount++;
+            }
+        }
+
+        if (separatorCount > 1) {
+            throw new Error(`Line on index ${idx} has multiple value separators.`);
+        }
     }
 
     /**
