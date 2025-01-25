@@ -6,7 +6,7 @@
     "**/*.test.ts"
   ],
   "compilerOptions": {
-    "module": "esnext",
+    "module": "NodeNext",
     "target": "esnext",
     "moduleResolution": "nodenext",
     "allowImportingTsExtensions": true,
