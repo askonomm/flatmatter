@@ -1,5 +1,5 @@
-import FlatMatter from "../flatmatter";
-import ToJson from "./to_json";
+import FlatMatter from "../flatmatter.ts";
+import ToJson from "./to_json.ts";
 
 test("Single-level configuration", () => {
     const fm = new FlatMatter(

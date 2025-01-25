@@ -1,8 +1,5 @@
+import { EOL } from "node:os";
 import {trimChar} from "./utils.ts";
-
-export type Matter = {
-    [key: string]: Matter | unknown;
-};
 
 export type ParsedValue = {
     value: unknown;
@@ -15,7 +12,7 @@ export type ComputeAction = {
 };
 
 export interface Serializer {
-    serialize(parsedConfig: Matter): unknown;
+    serialize(parsedConfig: Record<string, unknown>): unknown;
 }
 
 export interface FlatMatterFn {
@@ -26,7 +23,7 @@ export interface FlatMatterFn {
 
 export default class FlatMatter {
     private content: string;
-    private parsedConfig: Matter = {};
+    private parsedConfig: Record<string, unknown> = {};
     private functions: FlatMatterFn[];
 
     constructor(content: string, functions: FlatMatterFn[] = []) {
@@ -37,9 +34,23 @@ export default class FlatMatter {
 
     private parse(): void {
         const lines = this.content.split(/\r?\n/);
+        let frontMatterBreakCount = 0;
 
         for (let i = 0; i < lines.length; i++) {
-            this.parseLine(i, lines[i]);
+            if (lines[i].trim() === "---" && frontMatterBreakCount < 2) {
+                frontMatterBreakCount++;
+                continue;
+            }
+
+
+            // FlatMatter ends, Markdown begins
+            if (frontMatterBreakCount < 2) {
+                this.parseLine(i, lines[i]);
+                continue;
+            }
+
+            this.parsedConfig.content = lines.slice(i).join(EOL).trim();
+            break;
         }
     }
 
@@ -60,7 +71,7 @@ export default class FlatMatter {
 
         const config = keys.reduceRight((acc, key) => {
             return {[key]: acc};
-        }, this.computeValue(parsedValue)) as Matter;
+        }, this.computeValue(parsedValue)) as Record<string, unknown>;
 
         this.parsedConfig = {...this.parsedConfig, ...config};
     }

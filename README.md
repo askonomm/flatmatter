@@ -20,6 +20,25 @@ FlatMatter also supports functions, allowing you to build your own data DSL, and
 forward slash `/` character, meaning that the result of the left operation will be passed as the first argument
 of the next function, and so on, to produce an end result.
 
+Additionally, FlatMatter also parses FrontMatter content, meaning that a FlatMatter file like this:
+
+```yaml
+---
+title: "Hello, World!"
+---
+
+Content goes here.
+```
+
+Would result in this data being created:
+
+```json
+{
+    "title": "Hello, World!",
+    "content": "Content goes here."
+}
+```
+
 ## Install
 
 ```shell

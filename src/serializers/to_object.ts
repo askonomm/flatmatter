@@ -1,7 +1,7 @@
-import type { Matter, Serializer } from "../flatmatter.ts";
+import type {Serializer} from "../flatmatter.ts";
 
 export default class ToObject implements Serializer {
-  serialize(parsedConfig: Matter): Matter {
+  serialize(parsedConfig: Record<string, unknown>): Record<string, unknown> {
     return parsedConfig;
   }
 }
