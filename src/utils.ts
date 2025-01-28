@@ -1,9 +1,5 @@
 /**
  * Trims char(s) from both sides of the given input string.
-
- * @param {string} input
- * @param {string | string[]} char
- * @returns {string}
  */
 export function trimChar(input: string, char: string | string[]): string {
   if (typeof char === "string") {

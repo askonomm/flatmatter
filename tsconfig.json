@@ -1,15 +1,11 @@
 {
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "**/*.test.ts"
-  ],
+  "include": ["src"],
   "compilerOptions": {
     "module": "NodeNext",
     "target": "esnext",
     "moduleResolution": "nodenext",
     "allowImportingTsExtensions": true,
+    "noEmit": true,
     "declaration": true,
     "skipLibCheck": true,
     "rootDir": "src",
@@ -17,11 +13,7 @@
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
-    "lib": [
-      "esnext",
-    ],
-    "types": [
-      "vitest/globals"
-    ]
+    "lib": ["esnext"],
+    "types": ["vitest/globals"]
   }
 }

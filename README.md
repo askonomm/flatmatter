@@ -26,7 +26,6 @@ Additionally, FlatMatter also parses FrontMatter content, meaning that a FlatMat
 ---
 title: "Hello, World!"
 ---
-
 Content goes here.
 ```
 
@@ -34,8 +33,8 @@ Would result in this data being created:
 
 ```json
 {
-    "title": "Hello, World!",
-    "content": "Content goes here."
+  "title": "Hello, World!",
+  "content": "Content goes here."
 }
 ```
 
@@ -50,10 +49,10 @@ npm i flatmatter
 The most basic usage looks like this:
 
 ```typescript
-import {FlatMatter, ToObject} from 'flatmatter';
+import { FlatMatter, ToObject } from "flatmatter";
 
 const fm = new FlatMatter('key: "value"');
-const config = fm.serialize(new ToObject);
+const config = fm.serialize(new ToObject());
 
 // {key: "value"}
 ```
@@ -63,7 +62,7 @@ However, you most likely want to use it with functions. Those you have to create
 **TypeScript:**
 
 ```typescript
-import {FlatMatterFn} from "flatmatter";
+import { FlatMatterFn } from "flatmatter";
 
 class ToUpper implements FlatMatterFn {
   name = "to-upper";
@@ -92,7 +91,7 @@ mind is that if the function is piped, the first argument passed to it will be t
 Once you have your functions, simply pass them to FlatMatter like this:
 
 ```typescript
-import {FlatMatter, ToObject} from 'flatmatter';
+import { FlatMatter, ToObject } from "flatmatter";
 
 const fm = new FlatMatter('key: "value" / to-upper', [new MyFunction()]);
 const config = fm.serialize(new ToObject());
@@ -111,11 +110,11 @@ creating a class that implements the `Serializer` interface.
 **TypeScript:**
 
 ```typescript
-import {Matter, Serializer} from 'flatmatter';
+import { Serializer } from "flatmatter";
 
 class ToJson implements Serializer {
-  serialize(parsedConfig: Matter): string {
-    return JSON.stringify(parsedConfig);
+  serialize(config: Record<string, unknown>): string {
+    return JSON.stringify(config);
   }
 }
 ```
@@ -124,8 +123,8 @@ class ToJson implements Serializer {
 
 ```javascript
 class ToJson {
-  serialize(parsedConfig) {
-    return JSON.stringify(parsedConfig);
+  serialize(config) {
+    return JSON.stringify(config);
   }
 }
 ```
