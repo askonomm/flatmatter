@@ -13,6 +13,7 @@
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
+    "exactOptionalPropertyTypes": true,
     "lib": ["esnext"],
     "types": ["vitest/globals"]
   }
