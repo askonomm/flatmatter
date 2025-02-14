@@ -5,7 +5,6 @@ import * as Ref from "effect/Ref";
 import * as Cause from "effect/Cause";
 import * as Schema from "effect/Schema";
 import { trimChar } from "./utils.ts";
-import ToJson from "./serializers/to_json.ts";
 
 const ComputeAction = Schema.Struct({
   identifier: Schema.NonEmptyString,
@@ -293,19 +292,6 @@ const config = (
   );
 };
 
-export type Serializer<T> = (config: Record<string, unknown>) => T;
-
-const serialize = <T,>(
-  config: Record<string, unknown>,
-  serializer: Serializer<T>,
-): T => {
-  return serializer(config);
-};
-
 export default {
   config,
-  serialize,
-  Serializers: {
-    ToJson,
-  },
 };
