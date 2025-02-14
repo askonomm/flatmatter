@@ -3,7 +3,6 @@ import * as Effect from "effect/Effect";
 import * as Context from "effect/Context";
 import * as Ref from "effect/Ref";
 import * as Cause from "effect/Cause";
-import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import { trimChar } from "./utils.ts";
 import ToJson from "./serializers/to_json.ts";
@@ -113,13 +112,6 @@ const parseSimpleValue = (value: string): string | number | boolean => {
   return trimChar(value, '"');
 };
 
-const isFunctionValue = (value: string): boolean => {
-  const isFnCall = value.startsWith("(") && value.endsWith(")");
-  const isFnReference = !!value.match(/^([a-zA-Z0-9_-]+)$/);
-
-  return isFnCall || isFnReference;
-};
-
 const parseFunctionValueArgs = (value: string): unknown[] => {
   const parts = value
     .substring(1, value.length - 1)
@@ -193,53 +185,21 @@ const composePipedValueParts = (value: string): string[] => {
   return normalizedParts;
 };
 
-const isPipedValue = (value: string): boolean => {
-  return composePipedValueParts(value).every((part) => {
-    return isSimpleValue(part) || isFunctionValue(part);
-  });
-};
-
-const parsePipedValue = (value: string): typeof ParsedValue.Type => {
-  const parts = composePipedValueParts(value);
-
-  if (isSimpleValue(parts[0])) {
-    return ParsedValue.make({
-      value: parseSimpleValue(parts[0]),
-      computeActions: parts.slice(1).map((p) => parseFunctionValue(p)),
-    });
-  }
-
-  return ParsedValue.make({
-    value: null,
-    computeActions: parts.map((p) => parseFunctionValue(p)),
-  });
-};
-
 const parseValueEffect = (value: string) =>
   Effect.gen(function* () {
-    if (isSimpleValue(value)) {
-      return Option.some(
-        ParsedValue.make({
-          value: parseSimpleValue(value),
-          computeActions: [],
-        }),
-      );
+    const parts = composePipedValueParts(value);
+
+    if (isSimpleValue(parts[0])) {
+      return ParsedValue.make({
+        value: parseSimpleValue(parts[0]),
+        computeActions: parts.slice(1).map((p) => parseFunctionValue(p)),
+      });
     }
 
-    if (isFunctionValue(value)) {
-      return Option.some(
-        ParsedValue.make({
-          value: null,
-          computeActions: [parseFunctionValue(value)],
-        }),
-      );
-    }
-
-    if (isPipedValue(value)) {
-      return Option.some(parsePipedValue(value));
-    }
-
-    return Option.none();
+    return ParsedValue.make({
+      value: null,
+      computeActions: parts.map((p) => parseFunctionValue(p)),
+    });
   });
 
 const computeValueEffect = (parsedValue: typeof ParsedValue.Type) =>
@@ -273,13 +233,11 @@ const parseLineEffect = (idx: number, line: string) =>
     const value = line.split(":").slice(1).join(":").trim();
     const parsedValue = yield* parseValueEffect(value);
 
-    if (Option.isNone(parsedValue)) return;
-
     const updatedConfig = keys.reduceRight(
       (acc, key) => {
         return { [key]: acc };
       },
-      yield* computeValueEffect(parsedValue.value),
+      yield* computeValueEffect(parsedValue),
     ) as Record<string, unknown>;
 
     yield* Ref.update(yield* ConfigState, (config) => {

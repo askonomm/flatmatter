@@ -87,7 +87,9 @@ test("Piped function by call usage", () => {
 test("Invalid value in pipe", () => {
   const config = FlatMatter.config('a: "value" / / asd');
 
-  expect(config).toStrictEqual({});
+  expect(config).toStrictEqual({
+    a: "value",
+  });
 });
 
 test("Invalid value in pipe, 2", () => {
