@@ -21,6 +21,9 @@ type Function = {
   compute(...args: unknown[]): unknown;
 };
 
+/**
+ * State for holding functions
+ */
 class FunctionsState extends Context.Tag("FunctionsState")<
   FunctionsState,
   Ref.Ref<Function[]>
@@ -42,6 +45,9 @@ class ConfigState extends Context.Tag("ConfigState")<
   Ref.Ref<Record<string, unknown>>
 >() {}
 
+/**
+ * An Effect which validates that the line has a value separator
+ */
 const validateLineHasKeyValEffect = (idx: number, line: string) =>
   Effect.gen(function* () {
     if (!line.includes(":")) {
@@ -52,7 +58,7 @@ const validateLineHasKeyValEffect = (idx: number, line: string) =>
   });
 
 /**
- * Validates that the given line has only one value separator.
+ * An Effect which validates that the given line has only one value separator.
  */
 const validateLineHasOnlyOneColonCharEffect = (idx: number, line: string) =>
   Effect.gen(function* () {
@@ -75,6 +81,9 @@ const validateLineHasOnlyOneColonCharEffect = (idx: number, line: string) =>
     }
   });
 
+/**
+ * An Effect which validates line conformance
+ */
 const validateLineConformanceEffect = (idx: number, line: string) =>
   Effect.gen(function* () {
     const validatorEffects = [
@@ -87,6 +96,13 @@ const validateLineConformanceEffect = (idx: number, line: string) =>
     }
   });
 
+/**
+ * Checks if `value` is a simple value, e.g any of:
+ *
+ * - a string (value which is between double quotes)
+ * - a boolean (value which is either true or false)
+ * - a number
+ */
 const isSimpleValue = (value: string): boolean => {
   const isString = value.startsWith('"') && value.endsWith('"');
   const isBoolean = value === "true" || value === "false";
@@ -95,6 +111,9 @@ const isSimpleValue = (value: string): boolean => {
   return isString || isBoolean || isNumber;
 };
 
+/**
+ * Parses the simple value string into a typed value.
+ */
 const parseSimpleValue = (value: string): string | number | boolean => {
   if (value === "true" || value === "false") {
     return value === "true";
@@ -111,6 +130,9 @@ const parseSimpleValue = (value: string): string | number | boolean => {
   return trimChar(value, '"');
 };
 
+/**
+ * Parses the function value args string into an array of args
+ */
 const parseFunctionValueArgs = (value: string): unknown[] => {
   const parts = value
     .substring(1, value.length - 1)
@@ -141,6 +163,9 @@ const parseFunctionValueArgs = (value: string): unknown[] => {
   return normalizedParts.map((part) => parseSimpleValue(part));
 };
 
+/**
+ * Parses the function value into a `ComputeAction`
+ */
 const parseFunctionValue = (
   value: string,
 ): Schema.Schema.Type<typeof ComputeAction> => {
@@ -162,6 +187,9 @@ const parseFunctionValue = (
   });
 };
 
+/**
+ * Composes the piped value parts from the value string
+ */
 const composePipedValueParts = (value: string): string[] => {
   const parts = value.split(" / ");
   const normalizedParts = [parts[0]];
@@ -184,6 +212,9 @@ const composePipedValueParts = (value: string): string[] => {
   return normalizedParts;
 };
 
+/**
+ * Parses the value string into a `ParsedValue`
+ */
 const parseValueEffect = (value: string) =>
   Effect.gen(function* () {
     const parts = composePipedValueParts(value);
@@ -201,6 +232,9 @@ const parseValueEffect = (value: string) =>
     });
   });
 
+/**
+ * Computes the `ParsedValue` into a final consumable value
+ */
 const computeValueEffect = (parsedValue: typeof ParsedValue.Type) =>
   Effect.gen(function* () {
     let value = parsedValue.value;
@@ -224,6 +258,9 @@ const computeValueEffect = (parsedValue: typeof ParsedValue.Type) =>
     return value;
   });
 
+/**
+ * Parses the FlatMatter line
+ */
 const parseLineEffect = (idx: number, line: string) =>
   Effect.gen(function* () {
     yield* validateLineConformanceEffect(idx, line);
@@ -244,6 +281,9 @@ const parseLineEffect = (idx: number, line: string) =>
     });
   });
 
+/**
+ * Parses the FlatMatter content
+ */
 const parseContentEffect = Effect.gen(function* () {
   const content = yield* Ref.get(yield* ContentState);
   const lines = content.split(EOL);
@@ -262,8 +302,10 @@ const parseContentEffect = Effect.gen(function* () {
 
     // FlatMatter ends, Markdown begins
     yield* Ref.update(yield* ConfigState, (config) => {
-      config.content = lines.slice(i).join(EOL).trim();
-      return config;
+      return {
+        ...config,
+        content: lines.slice(i).join(EOL).trim(),
+      };
     });
 
     break;
@@ -271,18 +313,18 @@ const parseContentEffect = Effect.gen(function* () {
 });
 
 /**
- *
+ * Parses the FlatMatter content into a `Record<string, unknown>` object.
  */
-const composeConfigEffect = Effect.gen(function* () {
-  yield* parseContentEffect;
-
-  return yield* Ref.get(yield* ConfigState);
-});
-
 const config = (
   content: string,
   functions: Function[] = [],
 ): Record<string, unknown> => {
+  const composeConfigEffect = Effect.gen(function* () {
+    yield* parseContentEffect;
+
+    return yield* Ref.get(yield* ConfigState);
+  });
+
   return Effect.runSync(
     composeConfigEffect.pipe(
       Effect.provideServiceEffect(ContentState, Ref.make(content)),
