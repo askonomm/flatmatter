@@ -49,84 +49,34 @@ npm i flatmatter
 The most basic usage looks like this:
 
 ```typescript
-import { FlatMatter, ToObject } from "flatmatter";
+import FlatMatter from "flatmatter";
 
-const fm = new FlatMatter('key: "value"');
-const config = fm.serialize(new ToObject());
+const config = FlatMatter.config('key: "value"');
 
 // {key: "value"}
 ```
 
 However, you most likely want to use it with functions. Those you have to create yourself.
 
-**TypeScript:**
-
 ```typescript
-import { FlatMatterFn } from "flatmatter";
-
-class ToUpper implements FlatMatterFn {
-  name = "to-upper";
-
-  compute(input: string): unknown {
+const toUpper = {
+  name: 'to-upper',
+  compute: (input: string): unknown => {
     return input.toUpperCase();
   }
 }
 ```
 
-**JavaScript:**
-
-```javascript
-class ToUpper {
-  name = "to-upper";
-
-  compute(input) {
-    return input.toUpperCase();
-  }
-}
-```
-
-A FlatMatter function has to implement the `FlatMatterFn` interface. And like I mentioned before, a thing to keep in
-mind is that if the function is piped, the first argument passed to it will be the result of the previous operation.
+A FlatMatter function has to have a `name` property and a `compute` callable which takes a string and returns something. And,
+like I mentioned before, a thing to keep in mind is that if the function is piped, the first argument passed to it will be
+the result of the previous operation.
 
 Once you have your functions, simply pass them to FlatMatter like this:
 
 ```typescript
-import { FlatMatter, ToObject } from "flatmatter";
+import FlatMatter from "flatmatter";
 
-const fm = new FlatMatter('key: "value" / to-upper', [new MyFunction()]);
-const config = fm.serialize(new ToObject());
+const config = FlatMatter.config('key: "value" / to-upper', [toUpper]);
 
 // {key: "VALUE"}
 ```
-
-**Note:** if you don't like classes, you can also pass objects that have the `name` key and the `compute` callback
-function.
-
-## Serializers
-
-FlatMatter comes built-in with two very simple serializers: `ToObject` and `ToJson`. You can create your own by
-creating a class that implements the `Serializer` interface.
-
-**TypeScript:**
-
-```typescript
-import { Serializer } from "flatmatter";
-
-class ToJson implements Serializer {
-  serialize(config: Record<string, unknown>): string {
-    return JSON.stringify(config);
-  }
-}
-```
-
-**JavaScript:**
-
-```javascript
-class ToJson {
-  serialize(config) {
-    return JSON.stringify(config);
-  }
-}
-```
-
-**Note:** if you don't like classes, you can also pass objects that have the `serialize` callback function.
